@@ -1,8 +1,3 @@
-"""
-StreetScan AI: Real-Time Infrastructure Damage Assessment System
-Engineered by Azizullah Naik
-"""
-
 import os
 import base64
 from pathlib import Path
@@ -12,7 +7,11 @@ import numpy as np
 import cv2
 from ultralytics import YOLO
 
-app = Flask(__name__)
+# Vercel-ready explicit path binding (No assets or templates blocking)
+app = Flask(__name__, 
+            static_url_path='/static',
+            static_folder='static',
+            template_folder='templates')
 CORS(app)
 
 # Configuration
@@ -33,6 +32,8 @@ CLASS_COLORS = {
     2: (70, 130, 180)    # Steel Blue for Manhole
 }
 
+# Global Model Variable
+model = None
 
 def initialize_model():
     """
@@ -46,13 +47,24 @@ def initialize_model():
         if not os.path.exists(MODEL_PATH):
             raise FileNotFoundError(f"Model file not found at {MODEL_PATH}")
         
-        model = YOLO(MODEL_PATH)
+        loaded_model = YOLO(MODEL_PATH)
         print("[INIT] Model loaded successfully.")
-        return model
+        return loaded_model
     except Exception as e:
         print(f"[ERROR] Failed to initialize YOLOv11 model: {str(e)}")
         print("[ERROR] Serverless environment may have timed out or hit memory limits during model compilation")
         return None
+
+
+def get_model():
+    """
+    Lazy loader to prevent Vercel Cold Start timeouts.
+    Only loads the model when the first API call actually hits the server.
+    """
+    global model
+    if model is None:
+        model = initialize_model()
+    return model
 
 
 def calculate_road_safety_index(total_detections, image_area):
@@ -146,10 +158,6 @@ def image_to_base64_clean(image_np):
     return img_str
 
 
-# Initialize at startup
-model = initialize_model()
-
-
 @app.route('/')
 def index():
     """Render the main dashboard interface."""
@@ -167,8 +175,11 @@ def detect_damage():
         print("[DEBUG] /api/detect endpoint called")
         print(f"[DEBUG] Request files keys: {list(request.files.keys())}")
         
+        # Lazy load the model on-demand
+        active_model = get_model()
+        
         # Defensive check: Ensure model is loaded
-        if model is None:
+        if active_model is None:
             print("[ERROR] Model not initialized - serverless environment may have failed during startup")
             return jsonify({
                 'error': 'Model initialization failed. Serverless environment may have timed out or exceeded memory limits during model compilation.',
@@ -219,7 +230,7 @@ def detect_damage():
         # Run YOLOv11 inference with timeout protection
         print(f"[DETECT] Running YOLOv11 inference...")
         try:
-            results = model(image_np, verbose=False)
+            results = active_model(image_np, verbose=False)
         except Exception as inference_error:
             print(f"[ERROR] YOLOv11 inference failed: {str(inference_error)}")
             print("[ERROR] Serverless environment may have timed out during inference")
@@ -303,9 +314,10 @@ def detect_damage():
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint for monitoring system status."""
+    active_model = get_model()
     return jsonify({
         'status': 'healthy',
-        'model_loaded': model is not None
+        'model_loaded': active_model is not None
     })
 
 
