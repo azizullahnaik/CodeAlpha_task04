@@ -11,5 +11,14 @@
       "src": "/(.*)",
       "dest": "app.py"
     }
-  ]
+  ],
+  "functions": {
+    "app.py": {
+      "memory": 2048,
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "PYTHON_VERSION": "3.10"
+  }
 }
