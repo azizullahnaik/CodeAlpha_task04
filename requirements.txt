@@ -1,14 +1,6 @@
-# Set PyPI as the primary source so ultralytics is found instantly
---index-url https://pypi.org/simple
-
-# Add PyTorch CPU repository as a fallback for heavy ML binaries
---extra-index-url https://download.pytorch.org/whl/cpu
-
 Flask>=3.0.0
 Werkzeug>=3.0.0
-numpy>=1.24.0,<2.0.0
+ultralytics>=8.0.0
+numpy>=1.24.0
 opencv-python-headless>=4.8.0
 Flask-Cors>=4.0.0
-ultralytics==8.2.0
-torch==2.2.2+cpu
-torchvision==0.17.2+cpu
