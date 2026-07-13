@@ -1,6 +1,0 @@
-# Ignore local datasets and archives to save space
-archive.zip
-data/
-datasets/
-.venv/
-*.ipynb
