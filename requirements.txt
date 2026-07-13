@@ -3,8 +3,6 @@ Werkzeug>=3.0.0
 numpy>=1.24.0,<2.0.0
 opencv-python-headless>=4.8.0
 Flask-Cors>=4.0.0
-ultralytics==8.2.0
-
-# PyTorch CPU specific wheels using explicit URL instead of global index-url overrides
-torch==2.2.2+cpu --find-links https://download.pytorch.org/whl/torch_stable.html
-torchvision==0.17.2+cpu --find-links https://download.pytorch.org/whl/torch_stable.html
+torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu
+torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cpu
+ultralytics==8.2.0 --extra-index-url https://pypi.org/simple
