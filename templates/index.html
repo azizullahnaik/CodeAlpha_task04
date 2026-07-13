@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreetScan AI | Smart Road Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: {
+                            50: '#FFFBF5',
+                            100: '#FFF7ED',
+                            200: '#FFEDD5',
+                            300: '#FED7AA',
+                            400: '#FDBA74',
+                            500: '#F97316',
+                            600: '#EA580C',
+                            700: '#C2410C',
+                            800: '#9A3412',
+                            900: '#7C2D12',
+                        },
+                        warm: {
+                            50: '#FFFBF5',
+                            100: '#FFF7ED',
+                            200: '#FFEDD5',
+                            300: '#FED7AA',
+                            400: '#FDBA74',
+                            500: '#F97316',
+                            600: '#EA580C',
+                            700: '#C2410C',
+                            800: '#9A3412',
+                            900: '#7C2D12',
+                        }
+                    },
+                    animation: {
+                        'spin-slow': 'spin 8s linear infinite',
+                        'spin-reverse': 'spinReverse 6s linear infinite',
+                        'wiggle': 'wiggle 1s ease-in-out infinite',
+                        'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both infinite',
+                        'bounce-x': 'bounceX 2s ease-in-out infinite',
+                        'bounce-y': 'bounceY 1.5s ease-in-out infinite',
+                        'rotate-pulse': 'rotatePulse 3s ease-in-out infinite',
+                        'float-diagonal': 'floatDiagonal 4s ease-in-out infinite',
+                        'scale-pulse': 'scalePulse 2s ease-in-out infinite',
+                        'tilt': 'tilt 3s ease-in-out infinite',
+                        'wave': 'wave 2s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite',
+                        'morph': 'morph 4s ease-in-out infinite',
+                        'slide-rotate': 'slideRotate 5s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        spinReverse: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(-360deg)' }
+                        },
+                        wiggle: {
+                            '0%, 100%': { transform: 'rotate(-3deg)' },
+                            '50%': { transform: 'rotate(3deg)' }
+                        },
+                        shake: {
+                            '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+                            '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                            '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+                            '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
+                        },
+                        bounceX: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '50%': { transform: 'translateX(20px)' }
+                        },
+                        bounceY: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' }
+                        },
+                        rotatePulse: {
+                            '0%, 100%': { transform: 'rotate(0deg) scale(1)' },
+                            '50%': { transform: 'rotate(180deg) scale(1.1)' }
+                        },
+                        floatDiagonal: {
+                            '0%, 100%': { transform: 'translate(0, 0)' },
+                            '25%': { transform: 'translate(10px, -10px)' },
+                            '50%': { transform: 'translate(0, -20px)' },
+                            '75%': { transform: 'translate(-10px, -10px)' }
+                        },
+                        scalePulse: {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.05)' }
+                        },
+                        tilt: {
+                            '0%, 100%': { transform: 'rotate(0deg) translateY(0)' },
+                            '25%': { transform: 'rotate(5deg) translateY(-5px)' },
+                            '75%': { transform: 'rotate(-5deg) translateY(-5px)' }
+                        },
+                        wave: {
+                            '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+                            '25%': { transform: 'translateY(-5px) rotate(2deg)' },
+                            '75%': { transform: 'translateY(5px) rotate(-2deg)' }
+                        },
+                        glow: {
+                            '0%, 100%': { boxShadow: '0 0 20px rgba(249, 115, 22, 0.3)' },
+                            '50%': { boxShadow: '0 0 40px rgba(249, 115, 22, 0.6)' }
+                        },
+                        morph: {
+                            '0%, 100%': { borderRadius: '20px' },
+                            '50%': { borderRadius: '40px' }
+                        },
+                        slideRotate: {
+                            '0%, 100%': { transform: 'translateX(0) rotate(0deg)' },
+                            '25%': { transform: 'translateX(10px) rotate(5deg)' },
+                            '75%': { transform: 'translateX(-10px) rotate(-5deg)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(ellipse at top, #FFFBF5 0%, #FFF7ED 50%, #FFEDD5 100%);
+            min-height: 100vh;
+            color: #9A3412;
+            overflow-x: hidden;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 2px solid rgba(254, 215, 170, 0.5);
+            border-radius: 30px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(249, 115, 22, 0.6);
+            box-shadow: 0 30px 60px rgba(249, 115, 22, 0.2);
+        }
+        
+        .circular-upload {
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            border: 4px dashed rgba(249, 115, 22, 0.5);
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.05) 0%, rgba(255, 255, 255, 0.8) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .circular-upload:hover {
+            border-color: #F97316;
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(249, 115, 22, 0.3);
+        }
+        
+        .circular-upload::before {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent, rgba(249, 115, 22, 0.3), transparent);
+            animation: spin-slow 8s linear infinite;
+        }
+        
+        .stat-orb {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 251, 245, 0.7) 100%);
+            border: 3px solid rgba(254, 215, 170, 0.6);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .stat-orb::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 2px solid rgba(249, 115, 22, 0.3);
+            animation: spin-reverse 6s linear infinite;
+        }
+        
+        .stat-orb:hover {
+            transform: scale(1.15);
+            border-color: rgba(249, 115, 22, 0.8);
+            box-shadow: 0 20px 40px rgba(249, 115, 22, 0.3);
+        }
+        
+        .output-frame {
+            background: rgba(255, 255, 255, 0.85);
+            border: 3px solid rgba(249, 115, 22, 0.4);
+            border-radius: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .output-frame::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(249, 115, 22, 0.1), transparent, rgba(249, 115, 22, 0.1), transparent);
+            animation: spin-slow 10s linear infinite;
+        }
+        
+        .btn-action {
+            background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+            color: white;
+            font-weight: 700;
+            padding: 15px 40px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-action::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+            transform: translateX(-100%);
+            transition: transform 0.5s;
+        }
+        
+        .btn-action:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(249, 115, 22, 0.4);
+        }
+        
+        .btn-action:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+        
+        .mono-font {
+            font-family: 'Space Mono', monospace;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #9A3412 0%, #F97316 50%, #C2410C 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .visible {
+            display: block;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(254, 215, 170, 0.3);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(249, 115, 22, 0.6);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(249, 115, 22, 0.8);
+        }
+        
+        .decorative-circle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen relative">
+    <!-- Animated Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="decorative-circle bg-cream-300/20 w-96 h-96 -top-48 -left-48 animate-spin-slow"></div>
+        <div class="decorative-circle bg-cream-400/20 w-80 h-80 top-1/3 -right-40 animate-spin-reverse"></div>
+        <div class="decorative-circle bg-cream-200/30 w-64 h-64 bottom-20 left-1/4 animate-float-diagonal"></div>
+        <div class="decorative-circle bg-cream-300/15 w-72 h-72 bottom-1/3 right-1/4 animate-rotate-pulse"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative z-10 container mx-auto px-4 py-12 max-w-7xl">
+        
+        <!-- Header -->
+        <header class="text-center mb-16 animate-scale-pulse">
+            <div class="inline-block relative">
+                <div class="absolute -inset-4 bg-gradient-to-r from-cream-300 to-cream-400 rounded-full blur-xl opacity-30 animate-glow"></div>
+                <h1 class="text-6xl md:text-8xl font-black relative">
+                    <span class="gradient-text animate-tilt inline-block">StreetScan</span>
+                    <span class="text-cream-600 animate-wave inline-block"> AI</span>
+                </h1>
+            </div>
+            <p class="text-warm-800 text-xl md:text-2xl font-light mt-4 animate-float-diagonal">
+                Intelligent Road Damage Detection System
+            </p>
+            
+            <!-- Status Badge -->
+            <div class="glass-card mt-8 py-4 px-8 inline-flex items-center gap-4 animate-bounce-x">
+                <div class="w-4 h-4 bg-cream-500 rounded-full animate-pulse"></div>
+                <span class="mono-font text-sm text-warm-800">
+                    SYSTEM ACTIVE • YOLOv8 READY • SCANNING MODE
+                </span>
+            </div>
+        </header>
+
+        <!-- Main Content - Circular Layout -->
+        <div class="flex flex-col lg:flex-row items-center justify-center gap-12 mb-16">
+            
+            <!-- Circular Upload Zone -->
+            <div class="relative animate-wiggle">
+                <div class="circular-upload" id="uploadZone">
+                    <input type="file" id="fileInput" accept="image/*" class="hidden">
+                    <div id="uploadContent" class="text-center z-10 relative">
+                        <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-cream-200 flex items-center justify-center animate-spin-slow">
+                            <svg class="w-12 h-12 text-cream-600 animate-spin-reverse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <p class="text-xl font-bold text-warm-800 animate-bounce-y">Drop Image Here</p>
+                        <p class="text-warm-600 text-sm mt-2">or click to upload</p>
+                    </div>
+                    <div id="previewContent" class="hidden w-full h-full flex items-center justify-center z-10 relative">
+                        <img id="previewImage" class="w-full h-full object-cover rounded-full" alt="Preview">
+                    </div>
+                </div>
+                
+                <!-- Analyze Button -->
+                <div class="text-center mt-8">
+                    <button id="analyzeBtn" class="btn-action text-xl animate-scale-pulse" disabled>
+                        <span id="btnText">🔍 Analyze Road</span>
+                        <span id="btnLoader" class="hidden">
+                            <div class="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Output Display -->
+            <div class="relative animate-slide-rotate">
+                <div class="output-frame w-[400px] h-[400px] p-4 flex items-center justify-center">
+                    <div id="outputPlaceholder" class="text-center z-10 relative">
+                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-cream-200 flex items-center justify-center animate-rotate-pulse">
+                            <svg class="w-10 h-10 text-cream-600 animate-wiggle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                        </div>
+                        <p class="text-lg font-bold text-warm-800 animate-wave">Awaiting Analysis</p>
+                        <p class="text-warm-600 text-sm mt-2">Upload image to begin</p>
+                    </div>
+                    <img id="outputImage" class="max-w-full max-h-full rounded-2xl hidden z-10 relative" alt="Detection Output">
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics - Orb Layout -->
+        <div class="flex flex-wrap justify-center gap-8 mb-16">
+            
+            <!-- Potholes Orb -->
+            <div class="stat-orb animate-bounce-x" style="animation-delay: 0s;">
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mb-2 animate-wiggle">
+                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <p id="potholeCount" class="text-3xl font-black gradient-text">0</p>
+                <p class="text-warm-600 text-xs mt-1">Potholes</p>
+            </div>
+
+            <!-- Cracks Orb -->
+            <div class="stat-orb animate-bounce-y" style="animation-delay: 0.2s;">
+                <div class="w-10 h-10 rounded-full bg-cream-200 flex items-center justify-center mb-2 animate-rotate-pulse">
+                    <svg class="w-5 h-5 text-cream-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <p id="crackCount" class="text-3xl font-black gradient-text">0</p>
+                <p class="text-warm-600 text-xs mt-1">Cracks</p>
+            </div>
+
+            <!-- Manholes Orb -->
+            <div class="stat-orb animate-float-diagonal" style="animation-delay: 0.4s;">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-2 animate-spin-slow">
+                    <svg class="w-5 h-5 text-blue-500 animate-spin-reverse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <p id="manholeCount" class="text-3xl font-black gradient-text">0</p>
+                <p class="text-warm-600 text-xs mt-1">Manholes</p>
+            </div>
+
+            <!-- Safety Index Orb -->
+            <div class="stat-orb animate-tilt" style="animation-delay: 0.6s;">
+                <div class="w-10 h-10 rounded-full bg-cream-200 flex items-center justify-center mb-2 animate-scale-pulse">
+                    <svg class="w-5 h-5 text-cream-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <p id="safetyScore" class="text-3xl font-black gradient-text">0%</p>
+                <p id="severityLabel" class="text-warm-600 text-xs mt-1">Safety</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center py-8 animate-wave">
+            <div class="glass-card py-6 px-10 inline-block animate-morph">
+                <p class="text-warm-700 text-lg font-semibold">
+                    Engineered by <span class="gradient-text">Azizullah Naik</span>
+                </p>
+                <p class="text-warm-600 text-sm mt-2 mono-font opacity-70">
+                    YOLOv8 • Flask • TailwindCSS • AI-Powered
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadContent = document.getElementById('uploadContent');
+        const previewContent = document.getElementById('previewContent');
+        const previewImage = document.getElementById('previewImage');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const btnText = document.getElementById('btnText');
+        const btnLoader = document.getElementById('btnLoader');
+        const outputPlaceholder = document.getElementById('outputPlaceholder');
+        const outputImage = document.getElementById('outputImage');
+        const potholeCount = document.getElementById('potholeCount');
+        const crackCount = document.getElementById('crackCount');
+        const manholeCount = document.getElementById('manholeCount');
+        const safetyScore = document.getElementById('safetyScore');
+        const severityLabel = document.getElementById('severityLabel');
+
+        let selectedFile = null;
+        let isAnalyzing = false;
+
+        // Enter Key Listener
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !isAnalyzing) {
+                e.preventDefault();
+                analyzeBtn.click();
+            }
+        });
+
+        // Upload Zone Events
+        uploadZone.addEventListener('click', () => fileInput.click());
+        
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.style.transform = 'scale(1.1) rotate(5deg)';
+        });
+        
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.style.transform = 'scale(1) rotate(0deg)';
+        });
+        
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.style.transform = 'scale(1) rotate(0deg)';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                flushMemoryState();
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function flushMemoryState() {
+            selectedFile = null;
+            
+            if (previewImage.src) {
+                if (previewImage.src.startsWith('blob:')) {
+                    URL.revokeObjectURL(previewImage.src);
+                }
+                previewImage.src = '';
+                previewImage.removeAttribute('src');
+            }
+            
+            if (outputImage.src) {
+                if (outputImage.src.startsWith('blob:')) {
+                    URL.revokeObjectURL(outputImage.src);
+                }
+                outputImage.src = '';
+                outputImage.removeAttribute('src');
+            }
+            
+            outputPlaceholder.classList.remove('hidden');
+            outputImage.classList.add('hidden');
+            
+            potholeCount.textContent = '0';
+            crackCount.textContent = '0';
+            manholeCount.textContent = '0';
+            safetyScore.textContent = '0%';
+            severityLabel.textContent = 'Safety';
+            
+            if (window.gc && typeof window.gc === 'function') {
+                window.gc();
+            }
+        }
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file');
+                return;
+            }
+            
+            selectedFile = file;
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                uploadContent.classList.add('hidden');
+                previewContent.classList.remove('hidden');
+                analyzeBtn.disabled = false;
+            };
+            
+            reader.onerror = () => {
+                alert('Failed to read file. Please try again.');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        analyzeBtn.addEventListener('click', async () => {
+            if (isAnalyzing) {
+                return;
+            }
+            
+            const fileInputElement = document.getElementById('fileInput');
+            
+            if (!fileInputElement || fileInputElement.files.length === 0) {
+                alert('⚠️ Please select an image file first');
+                uploadZone.style.animation = 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both';
+                setTimeout(() => uploadZone.style.animation = '', 500);
+                return;
+            }
+            
+            const file = fileInputElement.files[0];
+            isAnalyzing = true;
+            
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+            analyzeBtn.disabled = true;
+            
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            try {
+                const response = await fetch('/api/detect', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const resultImage = document.getElementById('outputImage');
+                    resultImage.src = 'data:image/jpeg;base64,' + data.image;
+                    
+                    document.getElementById('outputPlaceholder').classList.add('hidden');
+                    resultImage.classList.remove('hidden');
+                    
+                    document.getElementById('potholeCount').textContent = data.counts.potholes;
+                    document.getElementById('crackCount').textContent = data.counts.cracks;
+                    document.getElementById('manholeCount').textContent = data.counts.manholes;
+                    
+                    const safetyIndexElement = document.getElementById('safetyScore');
+                    safetyIndexElement.textContent = data.safety_index + '%';
+                    
+                    const severityLabel = document.getElementById('severityLabel');
+                    severityLabel.textContent = data.severity;
+                    
+                    let severityColor;
+                    if (data.severity === 'LOW') {
+                        severityColor = '#F97316';
+                    } else if (data.severity === 'MODERATE') {
+                        severityColor = '#F59E0B';
+                    } else {
+                        severityColor = '#DC2626';
+                    }
+                    
+                    safetyIndexElement.style.color = severityColor;
+                    severityLabel.style.color = severityColor;
+                } else {
+                    alert('Server Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to analyze image. Error: ' + error.message);
+            } finally {
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+                analyzeBtn.disabled = false;
+                isAnalyzing = false;
+            }
+        });
+    </script>
+</body>
+</html>
